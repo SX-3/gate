@@ -1,0 +1,24 @@
+{
+  "name": "root",
+  "type": "module",
+  "private": true,
+  "module": "index.ts",
+  "scripts": {
+    "build": "bun --filter @sx3/gate build",
+    "test": "bun --filter @sx3/gate test"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^8.2.0",
+    "@types/bun": "latest",
+    "eslint": "^10.2.0",
+    "sury": "^11.0.0-alpha.4"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "name": "@sx3/gate",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Very fast schema validation/parsing/check",
+  "author": "SX3",
+  "license": "MIT",
+  "homepage": "https://github.com/SX-3/gate",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SX-3/gate"
+  },
+  "bugs": {
+    "url": "https://github.com/SX-3/gate/issues"
+  },
+  "keywords": [
+    "Schema",
+    "Validation",
+    "Parser",
+    "Check",
+    "TypeScript",
+    "Zod",
+    "Valibot",
+    "Ajv"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "test": "bun test && bunx tsc --noEmit",
+    "build": "tsdown"
+  },
+  "devDependencies": {
+    "eslint": "^10.3.0",
+    "tsdown": "^0.22.0",
+    "typescript": "^5"
+  }
+}
