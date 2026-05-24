@@ -348,5 +348,21 @@ describe('object', () => {
       // Original should be unchanged
       expect(original.strict).toBe(originalStrict);
     });
+
+    it('does not mutate nested fields of original schema', () => {
+      const inner = object({ value: string });
+      const original = object({ name: string, nested: inner });
+
+      // @ts-expect-error — fields entries are typed as Schema, but runtime has strict
+      const originalInnerStrict = original.fields.nested.strict;
+
+      // Create a strict version, original must remain untouched
+      strict(original);
+
+      // @ts-expect-error check
+      expect(original.fields.nested.strict).toBe(originalInnerStrict);
+      // Original inner schema must still work as loose (accept extra keys)
+      expect(check(inner)({ value: 'x', extra: true })).toBe(true);
+    });
   });
 });

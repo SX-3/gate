@@ -187,10 +187,10 @@ export function merge<T extends Record<string, unknown>>(
 }
 
 export function strict<T extends Record<string, unknown>>(schema: ObjectSchema<T>, deep = true): ObjectSchema<T> {
-  const fields: Record<string, Schema> = schema.fields;
+  const fields: Record<string, Schema> = { ...schema.fields };
 
   if (deep) {
-    for (const [key, value] of Object.entries(schema.fields)) {
+    for (const [key, value] of Object.entries(fields)) {
       if (value[TYPE] & SchemaType.OBJECT) fields[key] = strict(value as ObjectSchema, deep);
     }
   }
