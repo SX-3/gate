@@ -1,14 +1,12 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=32&duration=3000&pause=1000&color=58A6FF&center=true&vCenter=true&width=435&lines=%40sx3%2Fgate;Very+fast+schema+validation">
-  <img alt="Gate" src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=32&duration=3000&pause=1000&color=58A6FF&center=true&vCenter=true&width=435&lines=%40sx3%2Fgate;Very+fast+schema+validation">
+  <source media="(prefers-color-scheme: dark)" srcset="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=28&duration=3000&pause=1000&color=58A6FF&width=520&lines=%40sx3%2Fgate;Very+fast+schema+validation">
+  <img alt="Gate" src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=28&duration=3000&pause=1000&color=58A6FF&width=520&lines=%40sx3%2Fgate;Very+fast+schema+validation">
 </picture>
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@sx3/gate"><img src="https://img.shields.io/npm/v/@sx3/gate?color=cb3837&style=flat-square&label=npm" alt="npm version"></a>
   <a href="https://www.npmjs.com/package/@sx3/gate"><img src="https://img.shields.io/npm/dm/@sx3/gate?style=flat-square&color=cb3837" alt="npm downloads"></a>
   <a href="https://bundlejs.com/?q=@sx3/gate"><img src="https://img.shields.io/bundlejs/size/@sx3/gate?style=flat-square&label=size" alt="bundle size"></a>
-  <a href="https://github.com/SX-3/gate/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@sx3/gate?style=flat-square" alt="license"></a>
-  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5%2B-3178C6?style=flat-square&logo=typescript" alt="TypeScript"></a>
   <a href="https://github.com/SX-3/gate"><img src="https://img.shields.io/badge/Standard%20Schema-v1-4285F4?style=flat-square" alt="Standard Schema v1"></a>
 </p>
 
