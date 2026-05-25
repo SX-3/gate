@@ -5,7 +5,7 @@ import { Type as T } from 'typebox';
 import Schema from 'typebox/schema';
 import { z as Z } from 'zod';
 
-// S.global({ disableNanNumberValidation: true });
+S.global({ disableNanNumberValidation: true });
 export const SuryCompiledUserSchema = S.parser(S.schema({
   id: S.string,
   name: S.string.with(S.trim),
@@ -64,6 +64,7 @@ export const ZodUserSchema = Z.object({
   })),
 });
 
+G.settings({ checkNaN: false });
 export const GateCompiledUserSchema = G.parse(G.object({
   id: G.string,
   name: G.trim(G.string),

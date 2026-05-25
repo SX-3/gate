@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-import { GateCompiledUserSchema, SuryCompiledUserSchema } from './data/user';
+import { GateCompiledSchema, SuryCompiledSchema } from './data/moltar';
 
 console.log('===== SURY =====');
-console.log(SuryCompiledUserSchema.toString());
+console.log(SuryCompiledSchema.toString());
 console.log('===== GATE =====');
-console.log(GateCompiledUserSchema.toString());
+console.log(GateCompiledSchema.toString());

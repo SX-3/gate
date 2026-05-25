@@ -8,7 +8,7 @@ No any type annotations.
 Before run benchmarks: bun run build
 
 ## Other
-Benchmarks: packages/benchmark run `bun run bun:parse` for node `npm run node:parse`
+Benchmarks: packages/benchmark run `bun complex` for node `node complex.ts` | `bun moltar` for node `node moltar.ts`
 Sources: packages/gate
 Tests: packages/gate run `bun run test`
 Lint: bun run lint:fix
