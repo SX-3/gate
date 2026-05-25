@@ -19,6 +19,7 @@ export const SuryCompiledSchema = S.parser(S.schema({
   },
 }));
 
+G.settings({ checkNaN: false });
 export const GateCompiledSchema = G.parse(G.object({
   number: G.number,
   negNumber: G.number,

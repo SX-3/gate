@@ -5,20 +5,19 @@ import { getErrorMessage } from '../error';
 import { createSchema, SchemaType, TYPE } from '../schema';
 import { settings } from '../settings';
 
-interface NumberErrorOptions { checkNaN: boolean }
-type NumberOptions = ErrorGetter<NumberErrorOptions> | {
-  message?: ErrorGetter<NumberErrorOptions>;
+type NumberOptions = ErrorGetter | {
+  message?: ErrorGetter;
   checkNaN?: boolean;
 };
 
 function create(options?: NumberOptions): Schema<number> {
-  const checkNaN = typeof options === 'object' ? options.checkNaN ?? settings().checkNaN : true;
-  const errorMessage = getErrorMessage(options, { checkNaN }) ?? 'Expected number';
+  const errorMessage = getErrorMessage(options) ?? 'Expected number';
   return createSchema({
     [TYPE]: SchemaType.NUMBER,
     rules: (name) => {
-      let rule = `typeof ${name} ${EQ} "number" && !Number.isNaN(${name})`;
-      if (checkNaN) rule += ` && !Number.isNaN(${name})`;
+      const checkNaN = typeof options === 'object' ? (options.checkNaN ?? settings().checkNaN) : settings().checkNaN;
+      let rule = `typeof ${name} ${EQ} "number"`;
+      if (checkNaN) rule += ` && ${name}${EQ}${name}`;
       return [[rule, errorMessage]];
     },
   });
