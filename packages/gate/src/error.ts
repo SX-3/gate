@@ -1,9 +1,4 @@
-export interface ValidationError {
-  path: string[];
-  message: string;
-}
-
-export class GateError extends Error implements ValidationError {
+export class GateError extends Error {
   path: string[];
 
   constructor(message: string, path: string[]) {

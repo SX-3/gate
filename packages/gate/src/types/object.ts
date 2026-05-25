@@ -95,7 +95,7 @@ const compileObject: Compiler<ObjectSchema> = (options) => {
 
     if (schema.strict) {
       const keyName = `k${context.id}`;
-      lines.push(`for(const ${keyName} in ${name}){${fail(`Unexpected key "${keyName}"`, path, name)}}`);
+      lines.push(`for(const ${keyName} in ${name})${fail(`Unexpected key "${keyName}"`, path, name)}`);
     }
     else {
       lines.push(`${name}={};`);

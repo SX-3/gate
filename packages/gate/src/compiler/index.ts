@@ -116,9 +116,6 @@ export function compile<S extends Schema>(options: CompilerOptions<S>): Compiled
   const compiler = schema.compiler;
   const result = compiler ? compiler(options) : { lines: [], output: name };
 
-  // Process rules (type checks + constraints) — always, even with a compiler.
-  // The compiler handles structural validation (objects, arrays, modifiers);
-  // rules handle value-level checks (typeof, length, min, max, pattern, etc.).
   const rules = schema.rules?.(name, context);
   if (rules && rules.length) {
     for (const [condition, message] of rules) {
