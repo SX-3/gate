@@ -1,9 +1,11 @@
-export class GateError extends Error {
+export class GateError {
+  message: string;
   path: string[];
 
   constructor(message: string, path: string[]) {
-    super(message);
+    this.message = message;
     this.path = path;
+    // Error.captureStackTrace(this);
   }
 }
 
