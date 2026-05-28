@@ -1,4 +1,5 @@
-import type { CompilerOptions, Context } from './compiler';
+import type { CompilerOptions } from './compiler';
+import type { Context } from './compiler/context';
 import type { Schema } from './schema';
 import { compile } from './compiler';
 import { createSchema, isSchema, SchemaType, TYPE } from './schema';

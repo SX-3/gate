@@ -1,4 +1,4 @@
-import type { Context } from '../compiler';
+import type { Context } from '../compiler/context';
 import type { ErrorGetter } from '../error';
 import type { Schema } from '../schema';
 import { getErrorMessage } from '../error';

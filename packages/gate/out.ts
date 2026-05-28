@@ -1,6 +1,7 @@
 import {
   array,
   bigint,
+  check,
   datetime,
   int,
   merge,
@@ -84,4 +85,4 @@ const FileSchema = merge(
   TimestampsSchema,
 );
 
-console.error(parse(FileSchema).toString());
+console.error(check(FileSchema).toString());

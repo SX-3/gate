@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { check, Context, parse, validate } from '../src/compiler';
+import { check, parse, validate } from '../src/compiler';
+import { Context } from '../src/compiler/context';
 import { GateError } from '../src/error';
 import { array } from '../src/types/array';
 import { int } from '../src/types/int';

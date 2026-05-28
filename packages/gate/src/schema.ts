@@ -1,5 +1,6 @@
 /* eslint-disable ts/prefer-literal-enum-member, no-restricted-syntax */
-import type { Compiler, Context } from './compiler';
+import type { Compiler } from './compiler';
+import type { Context } from './compiler/context';
 import { starndard } from './standard';
 
 export const enum SchemaType {

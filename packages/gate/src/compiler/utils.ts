@@ -1,4 +1,5 @@
 import type { Schema } from '../schema';
+import { Context } from './context';
 
 const IDENTIFIER_REGEX = /^[a-z_$][\w$]*$/i;
 export function isIdentifier(name: string): boolean {
@@ -6,7 +7,7 @@ export function isIdentifier(name: string): boolean {
 }
 
 export function rulesCount(schema: Schema): number {
-  return schema.rules?.('', {} as any)?.length ?? 0;
+  return schema.rules?.('', new Context())?.length ?? 0;
 }
 
 /** True when a schema has no compiler and at most 1 rule — cheap enough to inline. */

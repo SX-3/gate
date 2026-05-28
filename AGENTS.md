@@ -12,4 +12,4 @@ Benchmarks: packages/benchmark run `bun complex` for node `node complex.ts` | `b
 Sources: packages/gate
 Tests: packages/gate run `bun run test`
 Lint: bun run lint:fix
-Check compiled output: packages/benchmark run `bun run out`
+Check compiled output: packages/gate run `bun out`

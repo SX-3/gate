@@ -1,4 +1,5 @@
-import type { Compiler, Context } from '../compiler';
+import type { Compiler } from '../compiler';
+import type { Context } from '../compiler/context';
 import type { ErrorGetter } from '../error';
 import type { Schema } from '../schema';
 import type { Simplify } from '../types';
