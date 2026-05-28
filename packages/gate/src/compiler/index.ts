@@ -45,31 +45,30 @@ function analyzePath(path: string[]): { parts: string[]; dynamic: string[] } {
   return { parts, dynamic };
 }
 
-function failParse(context: Context, message: string, path: string[], name: string): string {
+function failParse(context: Context, message: string, path: string[], name: string, errorName: string): string {
   if (isDynamicPath(path)) {
     const { parts, dynamic } = analyzePath(path);
     const params = ['v', ...dynamic].join(',');
     const args = [name, ...dynamic].join(',');
-    const key = context.embed(`(${params})=>{throw new E(${JSON.stringify(message)},[${parts.join(',')}])}`);
+    const key = context.embed(`(${params})=>{throw new ${errorName}(${JSON.stringify(message)},[${parts.join(',')}])}`);
     return `${key}(${args});`;
   }
 
-  const messageName = context.embed(JSON.stringify(message));
-  const pathName = context.embed(`[${path.join(',')}]`);
-  return `throw new E(${messageName},${pathName});`;
+  const error = context.embed(`new ${errorName}(${JSON.stringify(message)},[${path.join(',')}])`);
+  return `throw ${error};`;
 }
 
-function failValidate(context: Context, message: string, path: string[], name: string, issuesKey: string): string {
+function failValidate(context: Context, message: string, path: string[], name: string, issuesName: string): string {
   if (isDynamicPath(path)) {
     const { parts, dynamic } = analyzePath(path);
     const params = ['v', ...dynamic].join(',');
     const args = [name, ...dynamic].join(',');
-    const key = context.embed(`(${params})=>{${issuesKey}.push({message:${JSON.stringify(message)},path:[${parts.join(',')}]})}`);
+    const key = context.embed(`(${params})=>{${issuesName}.push({message:${JSON.stringify(message)},path:[${parts.join(',')}]})}`);
     return `${key}(${args});`;
   }
 
   const errorName = context.embed(`{message: ${JSON.stringify(message)}, path: [${path.join(',')}]}`);
-  return `${issuesKey}.push(${errorName});`;
+  return `${issuesName}.push(${errorName});`;
 }
 
 export function compile<S extends Schema>(options: CompilerOptions<S>): CompiledResult {
@@ -93,16 +92,13 @@ function build<O>(compiled: CompiledResult, context: Context, output?: string): 
   const code = optimize([
     '"use strict";',
     inline,
-    'return (i) => {',
+    'return i => {',
     compiled.lines.join(''),
     `return ${output ?? compiled.output};}`,
   ].join(''));
 
-  const create = params
-    ? new Function('E', params, code)
-    : new Function('E', code);
-
-  return create(GateError, ...values) as CompiledFunction<O>;
+  const create = params ? new Function(params, code) : new Function(code);
+  return create(...values) as CompiledFunction<O>;
 }
 
 // ── Public API ──
@@ -122,13 +118,14 @@ export function parse<O>(schema: Schema<O>): CompiledFunction<O> {
   if (cached) return cached;
 
   const context = new Context();
+  const errorName = context.embed(GateError);
   const options: CompilerOptions = {
     schema,
     name: 'i',
     path: [],
     context,
     mode: 'parse',
-    fail: (message, path, name) => failParse(context, message, path, name),
+    fail: (message, path, name) => failParse(context, message, path, name, errorName),
   };
 
   const builded = build<O>(compile(options), context);
