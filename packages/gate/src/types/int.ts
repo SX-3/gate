@@ -1,7 +1,6 @@
 import type { ErrorGetter } from '../error';
 import type { Rules, Schema } from '../schema';
 import { EQ } from '../compiler/platform';
-import { clamp } from '../constraints/clamp';
 import { getErrorMessage } from '../error';
 import { createSchema, SchemaType, TYPE } from '../schema';
 
@@ -27,24 +26,29 @@ export function createInteger<T extends number | bigint>(size?: IntSize): Schema
     const errorMessage = getErrorMessage(message, { size })
       ?? `Expected ${size ?? 'integer'}`;
 
+    // If size is specified, use the range from INT_RANGES
+    if (size) {
+      const [min, max] = INT_RANGES[size];
+
+      return createSchema({
+        [TYPE]: type,
+        rules: (name) => {
+          const base = isBigInt
+            ? `typeof ${name} ${EQ} "bigint"`
+            : `Number.isInteger(${name})`;
+
+          const clamped = `${base} && ${name} >= ${min} && ${name} <= ${max}`;
+
+          return [[clamped, errorMessage]];
+        },
+      });
+    }
+
     const rules: Rules = name => [[isBigInt
       ? `typeof ${name} ${EQ} "bigint"`
       : `Number.isInteger(${name})`, errorMessage]];
 
-    const schema = createSchema({ [TYPE]: type, rules });
-
-    // If size is specified, use the range from INT_RANGES
-    if (size) {
-      const [min, max] = INT_RANGES[size];
-      return clamp(
-        schema,
-        min,
-        max,
-        errorMessage,
-      );
-    }
-
-    return schema;
+    return createSchema({ [TYPE]: type, rules });
   };
 
   return Object.assign(create, create());
