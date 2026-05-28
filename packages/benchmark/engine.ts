@@ -2,9 +2,9 @@
 import { add, complete, cycle, suite } from 'benny';
 
 suite(
-  'NaN check',
-  add('Number.isNaN', () => Number.isNaN(123)),
-  add('NaN === NaN', () => (Number.NaN == Number.NaN)),
+  'equal',
+  add('===', () => typeof 123 === 'number'),
+  add('==', () =>  typeof 123 == 'number'),
   cycle(),
   complete()
 );
