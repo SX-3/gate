@@ -73,6 +73,13 @@ const FileCreateSchema = object({
   meta: nullable(FileMetaSchema),
 });
 
+// const User = object({
+//   name: pipe(string, min(2), max(50)),
+//   email: pipe(string, email),
+//   age: pipe(number, min(0), max(120)),
+//   tags: array(string),
+// });
+
 const TimestampsSchema = object({
   created_at: datetime,
   updated_at: datetime,

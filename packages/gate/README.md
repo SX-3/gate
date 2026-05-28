@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=28&duration=3000&pause=1000&color=58A6FF&width=520&lines=%40sx3%2Fgate;Very+fast+schema+validation">
-  <img alt="Gate" src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=28&duration=3000&pause=1000&color=58A6FF&width=520&lines=%40sx3%2Fgate;Very+fast+schema+validation">
+  <source media="(prefers-color-scheme: dark)" srcset="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=28&duration=3000&pause=1000&color=58A6FF&width=520&lines=%40sx3%2Fgate;Fastest+schema+validation">
+  <img alt="Gate" src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=28&duration=3000&pause=1000&color=58A6FF&width=520&lines=%40sx3%2Fgate;Fastest+schema+validation">
 </picture>
 
 <p align="center">
@@ -30,28 +30,23 @@ pnpm add @sx3/gate
 ```ts
 import { parse, validate, check, pipe, string, number, object, array, min, max, email } from '@sx3/gate';
 
-const User = object({
+const UserSchema = object({
   name: pipe(string, min(2), max(50)),
   email: pipe(string, email),
   age: pipe(number, min(0), max(120)),
   tags: array(string),
 });
 
-const data = parse(User)({
+const data = parse(UserSchema)({
   name: 'Alice',
   email: 'alice@example.com',
   age: 30,
   tags: ['admin'],
 });
 
-const result = validate(User)(input);
-if (result.issues) {
-  for (const issue of result.issues) console.log(issue.message, issue.path);
-} else {
-  console.log(result.value);
-}
+const result = validate(UserSchema)(input); // Return StandardSchema Result
 
-if (check(User)(input)) { /* ok */ }
+if (check(UserSchema)(input)) { /* ok */ }
 ```
 
 ## Validation Modes
@@ -67,7 +62,7 @@ try { parse(User)(input) }
 catch (error) { /* GateError */ }
 ```
 
-No allocations on the happy path. On error — `throw`. Ideal for APIs: invalid input → immediate 400.
+On error — `throw`. Ideal for APIs: invalid input → immediate 400.
 
 ### `validate` — result
 
@@ -89,7 +84,7 @@ import { check } from '@sx3/gate';
 if (check(User)(input)) { /* valid */ }
 ```
 
-No objects, no throw, no arrays — just `true`/`false`. The fastest mode. Ideal for guards and filters.
+No objects, no throw — just `true`/`false`. The fastest mode. Ideal for guards and filters.
 
 | Mode | Speed | Error info |
 |------|-------|------------|
@@ -141,7 +136,7 @@ import { refine } from '@sx3/gate';
 // predicate function
 pipe(number, refine(n => n % 2 === 0, 'Must be even'));
 
-// inline condition ($ → variable name)
+// inline condition ($ → variable name) / ! DANGER: don't try make runtime string literal (RCE risk)
 pipe(number, refine('$ % 2 === 0', 'Must be even'));
 ```
 
@@ -161,7 +156,7 @@ import {
 
 ```ts
 string       // typeof === "string"
-number       // typeof === "number", not NaN
+number       // typeof === "number"
 boolean      // typeof === "boolean"
 bigint       // typeof === "bigint"
 unknown      // passes anything
@@ -195,21 +190,22 @@ nullish(string)    // string | null | undefined
 Applied via `pipe`. For strings/arrays they check `.length`, for numbers they check the value.
 
 ```ts
-import { min, max, length, clamp, email, uuid, url, cuid, datetime, trim, port } from '@sx3/gate';
+min(string, 3)                // .length >= 3
+max(string, 100)              // .length <= 100
+clamp(string, 0, 100)         // .length >= 0 && .length <= 100
 
-pipe(string, min(3))          // .length >= 3
-pipe(string, max(100))        // .length <= 100
-pipe(string, length(10))      // .length === 10
-pipe(number, min(0))          // >= 0
-pipe(number, max(100))        // <= 100
-pipe(number, clamp(0, 100))   // >= 0 && <= 100
+min(number, 0)                // >= 0
+max(number, 100)              // <= 100
+clamp(number, 0, 100)         // >= 0 && <= 100
 
-pipe(string, email)           // email (regex)
-pipe(string, uuid)            // UUID v4
-pipe(string, url)             // http(s)://...
-pipe(string, cuid)            // CUID
-pipe(string, datetime)        // ISO 8601 UTC
-pipe(string, trim)            // whitespace trim
+length(string, 10)            // .length === 10
+
+email                          // email (regex)
+uuid                           // UUID v4
+url                            // http(s)://...
+cuid                           // CUID
+datetime                       // ISO 8601 UTC
+trim(string)                   // whitespace trim
 ```
 
 ### `pattern` — arbitrary regex
@@ -243,7 +239,8 @@ import { object, merge } from '@sx3/gate';
 
 const A = object({ id: number });
 const B = object({ name: string });
-const AB = merge(A, B);  // { id: number; name: string }
+const C = object({ age: number });
+const ABC = merge(A, B, C);  // { id: number; name: string; age: number }
 ```
 
 ### `strict` — disallow extra keys
@@ -251,7 +248,7 @@ const AB = merge(A, B);  // { id: number; name: string }
 ```ts
 import { object, strict } from '@sx3/gate';
 
-const StrictUser = strict(object({ id: number, name: string }));
+const StrictUser = strict(object({ id: number, name: string }), true); // strict(schema, deep)
 
 parse(StrictUser)({ id: 1, name: 'a', extra: true });
 // → GateError: Unexpected key "extra"
@@ -267,22 +264,22 @@ Compiles to inline coercion operations — no function calls at runtime.
 import { pipe, string, number, boolean, object, to } from '@sx3/gate';
 
 // string ↔ number
-pipe(string, to(number))     // "42" → 42
-pipe(number, to(string))     // 42 → "42"
+to(string, number)   // "42" → 42
+to(number, string)   // 42 → "42"
 
 // string ↔ boolean
-pipe(string, to(boolean))    // "true" → true, "false" → false
-pipe(boolean, to(string))    // true → "true"
+to(string, boolean)    // "true" → true, "false" → false
+to(boolean, string)    // true → "true"
 
 // string ↔ bigint
-pipe(string, to(bigint))     // "9007199254740991" → 9007199254740991n
-pipe(bigint, to(string))     // 9007199254740991n → "9007199254740991"
+to(string, bigint)     // "9007199254740991" → 9007199254740991n
+to(bigint, string)     // 9007199254740991n → "9007199254740991"
 
 // string ↔ object (JSON.parse / JSON.stringify)
-pipe(string, to(object({})))   // '{"a":1}' → { a: 1 }   — uses JSON.parse
-pipe(object({}), to(string))   // { a: 1 } → '{"a":1}'   — uses JSON.stringify
-pipe(string, to(array(number))) // '[1,2]' → [1, 2]      — JSON.parse
-pipe(array(number), to(string)) // [1,2] → '[1,2]'       — JSON.stringify
+to(string, object({}))    // '{"a":1}' → { a: 1 }   — uses JSON.parse
+to(object({}), string)    //  { a: 1 } → '{"a":1}'   — uses JSON.stringify
+to(string, array(number)) // '[1,2]' → [1, 2]      — JSON.parse
+to(array(number), string) //  [1,2] → '[1,2]'       — JSON.stringify
 ```
 
 Coercion only works between compatible type pairs. Unsupported combinations throw at schema compilation time.
@@ -290,17 +287,17 @@ Coercion only works between compatible type pairs. Unsupported combinations thro
 ### `transform` — custom transformation
 
 ```ts
-import { pipe, string, transform } from '@sx3/gate';
+import { string, transform } from '@sx3/gate';
 
-pipe(string, transform(s => s.trim().toUpperCase()));
-pipe(string, transform(JSON.parse));  // equivalent to to(object({}))
+transform(string, s => s.toUpperCase())('hello');  // "HELLO"
+transform(string, JSON.parse) // equivalent to to(object({}))
 ```
 
 ## Type Inference
 
 ```ts
 import type { Output } from '@sx3/gate';
-import { object, string, number } from '@sx3/gate';
+import { number, object, string } from '@sx3/gate';
 
 const UserSchema = object({ id: number, name: string });
 type User = Output<typeof UserSchema>;

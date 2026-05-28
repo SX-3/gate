@@ -7,9 +7,10 @@ import { createSchema, SchemaType, TYPE } from '../schema';
 
 type TupleItems = readonly Schema[];
 
-type TupleOutput<T extends readonly Schema[]> = {
-  [K in keyof T]: T[K] extends Schema<infer Output> ? Output : never;
-};
+type TupleOutput<T>
+  = T extends readonly [infer First, ...infer Rest]
+    ? [First extends Schema<infer Output> ? Output : never, ...TupleOutput<Rest>]
+    : [];
 
 interface TupleSchema<T extends TupleItems> extends Schema<TupleOutput<T>> {
   items: TupleItems;
@@ -64,7 +65,7 @@ const compileTuple: Compiler<TupleSchema<TupleItems>> = (options) => {
   return { lines, output: name };
 };
 
-export function tuple<T extends readonly Schema[]>(
+export function tuple<const T extends readonly Schema[]>(
   items: T,
   message?: ErrorGetter,
 ): TupleSchema<T> {

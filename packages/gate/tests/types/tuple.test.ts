@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, expectTypeOf, it } from 'bun:test';
 import { check, parse, validate } from '../../src/compiler';
 import { GateError } from '../../src/error';
 import { boolean } from '../../src/types/boolean';
@@ -14,6 +14,7 @@ describe('tuple', () => {
 
   it('rejects wrong length', () => {
     const p = parse(tuple([string(), number()]));
+    expectTypeOf(p).returns.toEqualTypeOf<[string, number]>();
     expect(() => p(['only one'])).toThrow(GateError);
     expect(() => p(['one', 2, 'three'])).toThrow(GateError);
   });
