@@ -21,9 +21,11 @@ export const enum SchemaType {
   TUPLE = 1 << 11, // 2048
   RECORD = 1 << 12, // 4096
   INTEGER = 1 << 13, // 8192
+  SYMBOL = 1 << 14, // 16384
+  FUNCTION = 1 << 15, // 32768
 }
 
-export const WITH_LENGTH = SchemaType.STRING | SchemaType.ARRAY;
+export const WITH_LENGTH = SchemaType.STRING | SchemaType.ARRAY | SchemaType.TUPLE;
 export const TYPE = Symbol('v:type');
 
 /** `[validCondition, message]` — condition is true when value is valid. */

@@ -38,8 +38,8 @@ const compileArray: Compiler<ArraySchema<unknown>> = (options) => {
   });
 
   lines.push(...compiled.lines);
-  const ouptut = compiled.output;
-  if (ouptut !== elementName) lines.push(`${elementName}=${ouptut};`);
+  const output = compiled.output;
+  if (output !== elementName) lines.push(`${elementName}=${output};`);
   lines.push(`}}else{${fail(schema.message, path, name)}}`);
 
   return {

@@ -7,8 +7,10 @@ import { optional } from '../../src/modifiers/optional';
 import { isSchema } from '../../src/schema';
 import { bigint } from '../../src/types/bigint';
 import { boolean } from '../../src/types/boolean';
+import { func } from '../../src/types/func';
 import { number } from '../../src/types/number';
 import { string } from '../../src/types/string';
+import { symbol } from '../../src/types/symbol';
 import { unknown } from '../../src/types/unknown';
 
 const schemas = [
@@ -17,6 +19,8 @@ const schemas = [
   boolean,
   bigint,
   unknown,
+  symbol,
+  func,
 ] as const;
 
 describe('primitives', () => {
