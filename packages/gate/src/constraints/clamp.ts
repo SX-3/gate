@@ -40,8 +40,9 @@ export function clamp<T extends Schema<AcceptValue>>(
 
     return extendSchema(schemaOrMin, {
       rules: (name: string) => [
-        [`${isCheckLength ? `${name}.length` : name}>=${min}`, message],
-        [`${isCheckLength ? `${name}.length` : name}<=${max}`, message],
+        [isCheckLength
+          ? `${name}.length >= ${min} && ${name}.length <= ${max}`
+          : `${name} >= ${min} && ${name} <= ${max}`, message],
       ],
     });
   }
