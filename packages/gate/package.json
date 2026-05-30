@@ -1,7 +1,7 @@
 {
   "name": "@sx3/gate",
   "type": "module",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Fastest schema validation/parsing/check",
   "author": "SX3",
   "license": "MIT",
