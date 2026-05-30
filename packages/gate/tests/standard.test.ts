@@ -1,6 +1,8 @@
 import type { InferInput, InferOutput, StandardSchemaV1, SuccessResult } from '../src/standard';
 import { afterEach, describe, expect, expectTypeOf, it } from 'bun:test';
 import { parse } from '../src';
+import { email } from '../src/constraints/formats';
+import { max } from '../src/constraints/max';
 import { nullable } from '../src/modifiers/nullable';
 import { optional } from '../src/modifiers/optional';
 import { settings } from '../src/settings';
@@ -49,6 +51,15 @@ describe('standard schema', () => {
       expect(std['~standard'].vendor).toBe('@sx3/gate');
       expect(typeof std['~standard'].validate).toBe('function');
     }
+  });
+
+  it('correct work with cache', () => {
+    const data = ['1', '2', '3'];
+    const initial = array(string);
+    const parsed = parse(initial)(data);
+    const modified = max(initial, 2);
+    expect(parsed).toEqual(data);
+    expect(() => parse(modified)(data)).toThrow();
   });
 
   describe('parse mode (default)', () => {
@@ -334,6 +345,26 @@ describe('standard schema', () => {
       if (result instanceof Promise) return;
       expect(result.issues).toBeDefined();
       expect(result.issues![0]!.message).toBe('Custom error');
+    });
+  });
+
+  describe('constraint composition', () => {
+    it('~standard.validate picks up constraint rules from composed schema', () => {
+      const s = standard(email(string()));
+      const result = s['~standard'].validate('not-an-email');
+      expect(result).not.toBeInstanceOf(Promise);
+      if (result instanceof Promise) return;
+      expect(result.issues).toBeDefined();
+      expect(result.issues!.length).toBeGreaterThan(0);
+    });
+
+    it('~standard.validate picks up max constraint from composed number schema', () => {
+      const s = standard(max(number(), 10));
+      const result = s['~standard'].validate(15);
+      expect(result).not.toBeInstanceOf(Promise);
+      if (result instanceof Promise) return;
+      expect(result.issues).toBeDefined();
+      expect(result.issues!.length).toBeGreaterThan(0);
     });
   });
 

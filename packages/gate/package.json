@@ -2,7 +2,7 @@
   "name": "@sx3/gate",
   "type": "module",
   "version": "1.0.6",
-  "description": "Very fast schema validation/parsing/check",
+  "description": "Fastest schema validation/parsing/check",
   "author": "SX3",
   "license": "MIT",
   "homepage": "https://github.com/SX-3/gate",

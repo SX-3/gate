@@ -1,9 +1,8 @@
-import type { Context } from '../compiler/context';
 import type { ErrorGetter } from '../error';
 import type { Schema } from '../schema';
 import { serialize } from '../compiler/utils';
 import { getErrorMessage } from '../error';
-import { isSchema, TYPE, WITH_LENGTH } from '../schema';
+import { extendSchema, isSchema, TYPE, WITH_LENGTH } from '../schema';
 
 type ClampValue = number | bigint;
 type AcceptValue = number | bigint | string | any[];
@@ -39,14 +38,12 @@ export function clamp<T extends Schema<AcceptValue>>(
     const message = getErrorMessage(maybeMessage, { min: minOrMax, max: maxOrOptions as ClampValue, isCheckLength })
       ?? (isCheckLength ? `Clamp length is ${min}..${max}` : `Clamp value is ${min}..${max}`);
 
-    return {
-      ...schemaOrMin,
-      rules: (name: string, context: Context) => [
-        ...schemaOrMin.rules?.(name, context) ?? [],
+    return extendSchema(schemaOrMin, {
+      rules: (name: string) => [
         [`${isCheckLength ? `${name}.length` : name}>=${min}`, message],
         [`${isCheckLength ? `${name}.length` : name}<=${max}`, message],
       ],
-    };
+    });
   }
 
   return schema => clamp(

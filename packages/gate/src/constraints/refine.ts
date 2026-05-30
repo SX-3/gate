@@ -1,7 +1,7 @@
 import type { ErrorGetter } from '../error';
 import type { Schema } from '../schema';
 import { getErrorMessage } from '../error';
-import { isSchema } from '../schema';
+import { extendSchema, isSchema } from '../schema';
 
 type Refine<T> = (value: T) => boolean;
 
@@ -19,24 +19,16 @@ export function refine<T>(
 
     // ── String-based: just add a rule ──
     if (typeof condition === 'string') {
-      return {
-        ...schema,
-        rules: (name, context) => [
-          ...(schema.rules?.(name, context) ?? []),
+      return extendSchema(schema, {
+        rules: name => [
           [condition.replace(/\$/g, name), message],
         ],
-      };
+      });
     }
 
-    return {
-      ...schema,
-      rules: (name, context) => {
-        return [
-          ...schema.rules?.(name, context) ?? [],
-          [`${context.embed(condition)}(${name})`, message],
-        ];
-      },
-    };
+    return extendSchema(schema, {
+      rules: (name, context) => [[`${context.embed(condition)}(${name})`, message]],
+    });
   }
 
   return schema => refine(

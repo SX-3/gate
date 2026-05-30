@@ -6,29 +6,27 @@ import { Context } from './context';
 import { optimize } from './optimize';
 import { invertCondition, isDynamicPath } from './utils';
 
-export type Mode = 'parse' | 'validate' | 'check';
+export const EMPTY_RESULT: CompiledResult = { lines: [], output: '' };
 
-export interface CompilerOptions<S extends Schema = Schema> {
+export type Mode = 'parse' | 'validate' | 'check';
+export type FailHandler = (message: string, path: string[], name: string) => string;
+export type Compiler<S extends Schema = Schema> = (options: CompilerOptions<S>) => CompiledResult;
+
+interface CompilerOptions<S extends Schema = Schema> {
   schema: S;
   name: string;
   path: string[];
   context: Context;
   mode: Mode;
-  fail: (message: string, path: string[], name: string) => string;
+  fail: FailHandler;
 }
 
-export type CompiledFunction<O> = (input: unknown) => O;
+type CompiledFunction<O> = (input: unknown) => O;
 
-export interface CompiledResult {
+interface CompiledResult {
   lines: string[];
   output: string;
 }
-
-export type Compiler<
-  S extends Schema = Schema,
-> = (options: CompilerOptions<S>) => CompiledResult;
-
-export const EMPTY_RESULT: CompiledResult = { lines: [], output: '' };
 
 function analyzePath(path: string[]): { parts: string[]; dynamic: string[] } {
   const parts: string[] = [];
@@ -71,19 +69,16 @@ function failValidate(context: Context, message: string, path: string[], name: s
   return `${issuesName}.push(${errorName});`;
 }
 
-export function compile<S extends Schema>(options: CompilerOptions<S>): CompiledResult {
-  const { schema, name, path, fail, context } = options;
-  const compiler = schema.compiler;
-  const result = compiler ? compiler(options) : { lines: [], output: name };
-
-  const rules = schema.rules?.(name, context);
-  if (rules && rules.length) {
-    for (const [condition, message] of rules) {
-      result.lines.push(`if(${invertCondition(condition)})${fail(message, path, name)}`);
-    }
+function failStandardParse(context: Context, message: string, path: string[], name: string): string {
+  if (isDynamicPath(path)) {
+    const { parts, dynamic } = analyzePath(path);
+    const params = ['v', ...dynamic].join(',');
+    const args = [name, ...dynamic].join(',');
+    const key = context.embed(`(${params})=>({issues:[{message:${JSON.stringify(message)},path:[${parts.join(',')}]}]})`);
+    return `return ${key}(${args});`;
   }
-
-  return result;
+  const error = context.embed(`{issues:[{message:${JSON.stringify(message)},path:[${path.join(',')}]}]}`);
+  return `return ${error};`;
 }
 
 function build<O>(compiled: CompiledResult, context: Context, output?: string): CompiledFunction<O> {
@@ -101,97 +96,138 @@ function build<O>(compiled: CompiledResult, context: Context, output?: string): 
   return create(...values) as CompiledFunction<O>;
 }
 
-// ── Public API ──
-
 const PARSE_CACHE = Symbol('v:parse');
 const CHECK_CACHE = Symbol('v:check');
 const VALIDATE_CACHE = Symbol('v:validate');
+const STANDARD_PARSE_CACHE = Symbol('v:standard-parse');
+const STANDARD_CHECK_CACHE = Symbol('v:standard-check');
 
-export interface SchemaWithCache<O> extends Schema<O> {
+interface SchemaWithCache<O> extends Schema<O> {
   [PARSE_CACHE]?: CompiledFunction<O>;
-  [CHECK_CACHE]?: CompiledFunction<O>;
-  [VALIDATE_CACHE]?: CompiledFunction<O>;
+  [CHECK_CACHE]?: CompiledFunction<boolean>;
+  [VALIDATE_CACHE]?: CompiledFunction<Result<O>>;
+  [STANDARD_PARSE_CACHE]?: CompiledFunction<Result<O>>;
+  [STANDARD_CHECK_CACHE]?: CompiledFunction<Result<O>>;
+}
+
+function cache<T>(schema: Schema, builded: CompiledFunction<T>, key: symbol): CompiledFunction<T> {
+  Object.defineProperty(schema, key, {
+    value: builded,
+    writable: false,
+    enumerable: false,
+    configurable: false,
+  });
+
+  return builded;
+}
+
+// ── Public API ──
+
+export function compile<S extends Schema>(options: CompilerOptions<S>): CompiledResult {
+  const { schema, name, path, fail, context } = options;
+  const compiler = schema.compiler;
+  const result = compiler ? compiler(options) : { lines: [], output: name };
+
+  const rules = schema.rules?.(name, context);
+  if (rules && rules.length) {
+    for (const [condition, message] of rules) {
+      result.lines.push(`if(${invertCondition(condition)})${fail(message, path, name)}`);
+    }
+  }
+
+  return result;
 }
 
 export function parse<O>(schema: Schema<O>): CompiledFunction<O> {
+  // ? Check cache first
   const cached = (schema as SchemaWithCache<O>)[PARSE_CACHE];
   if (cached) return cached;
 
+  // ? Compile
   const context = new Context();
-  const errorName = context.embed(GateError);
-  const options: CompilerOptions = {
+
+  // ? Cache result
+  return cache(schema, build<O>(compile({
     schema,
     name: 'i',
     path: [],
     context,
     mode: 'parse',
-    fail: (message, path, name) => failParse(context, message, path, name, errorName),
-  };
-
-  const builded = build<O>(compile(options), context);
-  Object.defineProperty(schema as SchemaWithCache<O>, PARSE_CACHE, {
-    value: builded,
-    enumerable: false,
-    configurable: false,
-    writable: false,
-  });
-
-  return builded;
+    fail: (message, path, name) => failParse(
+      context,
+      message,
+      path,
+      name,
+      context.embed(GateError),
+    ),
+  }), context), PARSE_CACHE);
 }
 
 export function validate<O>(schema: Schema<O>): CompiledFunction<Result<O>> {
-  const cached = (schema as SchemaWithCache<Result<O>>)[VALIDATE_CACHE];
+  const cached = (schema as SchemaWithCache<O>)[VALIDATE_CACHE];
   if (cached) return cached;
 
   const context = new Context();
   const issues = context.embed('[]');
-  const options: CompilerOptions = {
-    schema,
-    name: 'i',
-    path: [],
-    context,
-    mode: 'validate',
-    fail: (m, p, n) => failValidate(context, m, p, n, issues),
-  };
 
-  const builded = build<Result<O>>(
-    compile(options),
+  return cache(schema, build<Result<O>>(
+    compile({
+      schema,
+      name: 'i',
+      path: [],
+      context,
+      mode: 'validate',
+      fail: (m, p, n) => failValidate(context, m, p, n, issues),
+    }),
     context,
     `${issues}.length?{value:i,issues: ${issues}}:{value:i}`,
-  );
-
-  Object.defineProperty(schema as SchemaWithCache<Result<O>>, VALIDATE_CACHE, {
-    value: builded,
-    enumerable: false,
-    configurable: false,
-    writable: false,
-  });
-
-  return builded;
+  ), VALIDATE_CACHE);
 }
 
 export function check<O>(schema: Schema<O>): CompiledFunction<boolean> {
-  const cached = (schema as SchemaWithCache<boolean>)[CHECK_CACHE];
+  const cached = (schema as SchemaWithCache<O>)[CHECK_CACHE];
   if (cached) return cached;
 
   const context = new Context();
-  const options: CompilerOptions = {
+
+  return cache(schema, build<boolean>(compile({
     schema,
     name: 'i',
     path: [],
     context,
     mode: 'check',
     fail: () => 'return false;',
-  };
+  }), context, 'true'), CHECK_CACHE);
+}
 
-  const builded = build<boolean>(compile(options), context, 'true');
+export function standardParse<O>(schema: Schema<O>): CompiledFunction<Result<O>> {
+  const cached = (schema as SchemaWithCache<O>)[STANDARD_PARSE_CACHE];
+  if (cached) return cached;
 
-  Object.defineProperty(schema as SchemaWithCache<boolean>, CHECK_CACHE, {
-    value: builded,
-    enumerable: false,
-    configurable: false,
-    writable: false,
-  });
+  const context = new Context();
 
-  return builded;
+  return cache(schema, build<Result<O>>(compile({
+    schema,
+    name: 'i',
+    path: [],
+    context,
+    mode: 'parse',
+    fail: (message, path, name) => failStandardParse(context, message, path, name),
+  }), context, '{value:i}'), STANDARD_PARSE_CACHE);
+}
+
+export function standardCheck<O>(schema: Schema<O>): CompiledFunction<Result<O>> {
+  const cached = (schema as SchemaWithCache<O>)[STANDARD_CHECK_CACHE];
+  if (cached) return cached;
+
+  const context = new Context();
+
+  return cache(schema, build<Result<O>>(compile({
+    schema,
+    name: 'i',
+    path: [],
+    context,
+    mode: 'check',
+    fail: () => 'return {issues:[{message:"Invalid input"}]};',
+  }), context, '{value:i}'), STANDARD_CHECK_CACHE);
 }

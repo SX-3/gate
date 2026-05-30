@@ -1,8 +1,7 @@
-import type { Context } from '../compiler/context';
 import type { ErrorGetter } from '../error';
 import type { Schema } from '../schema';
 import { getErrorMessage } from '../error';
-import { isSchema } from '../schema';
+import { extendSchema, isSchema } from '../schema';
 
 type LengthMessage = ErrorGetter<{ n: number }>;
 
@@ -20,13 +19,11 @@ export function length<T extends { length: number }>(
   if (isSchema(schemaOrN)) {
     const n = nOrMessage as number;
     const errorMessage = getErrorMessage(maybeMessage, { n }) ?? `Length ${n}`;
-    return {
-      ...schemaOrN,
-      rules: (name: string, context: Context) => [
-        ...(schemaOrN.rules?.(name, context) ?? []),
+    return extendSchema(schemaOrN, {
+      rules: (name: string) => [
         [`${name}.length==${n}`, errorMessage],
       ],
-    };
+    });
   }
 
   return schema => length(

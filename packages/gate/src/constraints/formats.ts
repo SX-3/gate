@@ -4,7 +4,7 @@ import type { Schema } from '../schema';
 import { compile } from '../compiler';
 import { EQ } from '../compiler/platform';
 import { getErrorMessage } from '../error';
-import { createSchema, isSchema, SchemaType, TYPE } from '../schema';
+import { createSchema, extendSchema, isSchema, SchemaType, TYPE } from '../schema';
 import { uint16 } from '../types/int';
 
 function createFormat<T extends string>(
@@ -20,18 +20,16 @@ function createFormat<T extends string>(
     const message = getErrorMessage(maybeMessage) ?? defaultMessage;
 
     if (isSchema(schemaOrMessage)) {
-      return {
-        ...schemaOrMessage,
+      return extendSchema(schemaOrMessage, {
         rules: (name: string, context: Context) => {
           const key = context.embed(regex);
           return [
-            ...schemaOrMessage.rules?.(name, context) ?? [],
             [regex.global || regex.sticky
               ? `(${key}.lastIndex=0,${key}.test(${name}))`
               : `${key}.test(${name})`, message],
           ];
         },
-      };
+      });
     }
 
     return createSchema(SchemaType.STRING, {

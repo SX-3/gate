@@ -2,8 +2,7 @@
 import type { Compiler } from './compiler';
 import type { Context } from './compiler/context';
 import type { Props, StandardSchemaV1 } from './standard';
-import { check, parse, validate } from './compiler';
-import { GateError } from './error';
+import { standardCheck, standardParse, validate } from './compiler';
 import { settings } from './settings';
 
 export const enum SchemaType {
@@ -41,9 +40,9 @@ export interface Schema<I = unknown, O = I> {
 export type Output<T extends Schema> = T extends Schema<unknown, infer O> ? O : never;
 
 interface SchemaCreateOptions {
-  readonly compiler?: Compiler<any>;
-  readonly rules?: Rules;
-  readonly [key: string]: unknown;
+  compiler?: Compiler<any>;
+  rules?: Rules;
+  [key: string]: unknown;
 }
 
 export function isSchema(value: unknown): value is Schema {
@@ -55,34 +54,45 @@ export function createSchema<
   Options extends SchemaCreateOptions,
 >(type: SchemaType, options: Options): Schema<Output> & Options {
   const schema = { ...options, [TYPE]: type } as Schema<Output> & Options;
-  let standard: StandardSchemaV1<unknown, Output>['~standard']['validate'];
 
-  switch (settings().standardMode) {
-    case 'parse':
-      standard = (value: unknown) => {
-        try {
-          return { value: parse(schema)(value) };
-        }
-        catch (e) {
-          if (e instanceof GateError) return { issues: [{ message: e.message, path: e.path }] };
-          throw e;
-        }
-      };
-      break;
-    case 'validate':
-      standard = validate(schema);
-      break;
-    case 'check':
-      standard = (value: unknown) => check(schema)(value) ? { value: (value as Output) } : { issues: [{ message: 'Invalid input' }] };
-      break;
-  }
+  const standard = {
+    version: 1,
+    vendor: '@sx3/gate',
+    // ? Lazy compile, when first called and replace self
+    validate: (value: unknown) => {
+      let compiled: StandardSchemaV1<unknown, Output>['~standard']['validate'];
+
+      switch (settings().standardMode) {
+        case 'parse':
+          compiled = standardParse(schema);
+          break;
+        case 'validate':
+          compiled = validate(schema);
+          break;
+        case 'check':
+          compiled = standardCheck(schema);
+          break;
+      }
+
+      standard.validate = compiled;
+      return compiled(value);
+    },
+  };
 
   return {
     ...schema,
-    '~standard': {
-      version: 1,
-      vendor: '@sx3/gate',
-      validate: standard,
-    } as const,
+    '~standard': standard,
   };
+}
+
+export function extendSchema<S extends Schema>(schema: S, options: SchemaCreateOptions): S {
+  return createSchema(
+    schema[TYPE],
+    Object.assign({}, schema, options, {
+      rules: (name: string, context: Context) => [
+        ...schema.rules?.(name, context) ?? [],
+        ...options.rules?.(name, context) ?? [],
+      ],
+    }),
+  );
 }

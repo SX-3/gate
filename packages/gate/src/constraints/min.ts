@@ -2,7 +2,7 @@ import type { ErrorGetter } from '../error';
 import type { Schema } from '../schema';
 import { serialize } from '../compiler/utils';
 import { getErrorMessage } from '../error';
-import { isSchema, TYPE, WITH_LENGTH } from '../schema';
+import { extendSchema, isSchema, TYPE, WITH_LENGTH } from '../schema';
 
 type AcceptValue = number | bigint | string | any[];
 type MinValue = number | bigint;
@@ -24,13 +24,11 @@ export function min<T extends Schema<AcceptValue>>(
     const message = getErrorMessage(maybeMessage, { n: nOrMessage as MinValue, isCheckLength })
       ?? (isCheckLength ? `Min length is ${n}` : `Min value is ${n}`);
 
-    return {
-      ...schemaOrN,
-      rules: (name, context) => [
-        ...schemaOrN.rules?.(name, context) ?? [],
+    return extendSchema(schemaOrN, {
+      rules: name => [
         [isCheckLength ? `${name}.length>=${n}` : `${name}>=${n}`, message],
       ],
-    };
+    });
   }
 
   return schema => min(schema, schemaOrN, nOrMessage as MinMessage | undefined);

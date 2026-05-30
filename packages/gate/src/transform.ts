@@ -1,11 +1,10 @@
-import type { CompilerOptions } from './compiler';
+import type { FailHandler } from './compiler';
 import type { Context } from './compiler/context';
 import type { Schema } from './schema';
 import { compile } from './compiler';
 import { createSchema, isSchema, SchemaType, TYPE } from './schema';
 
-type Fail = CompilerOptions['fail'];
-type Coercion = (name: string, fail: Fail, path: string[]) => string;
+type Coercion = (name: string, fail: FailHandler, path: string[]) => string;
 
 const JSONStringify: Coercion = (name, fail, path) => `try{${name}=JSON.stringify(${name})}catch{${fail('Incorrect value', path, name)}}`;
 
