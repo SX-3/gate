@@ -21,7 +21,6 @@ describe('nullish', () => {
 
     it('accepts undefined', () => {
       const p = parse(nullish(string));
-      // @ts-expect-error fail
       expect(p(undefined)).toBe(undefined);
     });
 
@@ -34,7 +33,6 @@ describe('nullish', () => {
       const p = parse(nullish(number));
       expect(p(42)).toBe(42);
       expect(p(null)).toBe(null);
-      // @ts-expect-error fail
       expect(p(undefined)).toBe(undefined);
       expect(() => p('42')).toThrow(GateError);
     });

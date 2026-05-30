@@ -1,7 +1,7 @@
 import type { ErrorGetter } from '../error';
 import type { Schema } from '../schema';
 import { getErrorMessage } from '../error';
-import { createSchema, SchemaType, TYPE } from '../schema';
+import { createSchema, SchemaType } from '../schema';
 
 type InstanceMessage = ErrorGetter<{ constructor: new (...args: any[]) => any }>;
 
@@ -12,8 +12,7 @@ export function instance<T>(constructor: new (...args: any[]) => T, message?: In
   const errorMessage = getErrorMessage(message, { constructor })
     ?? `Expected instance of ${constructor.name || 'anonymous'}`;
 
-  return createSchema({
-    [TYPE]: SchemaType.INSTANCE,
+  return createSchema(SchemaType.INSTANCE, {
     rules: (name, context) => {
       const key = context.embed(constructor);
       return [[`${name} instanceof ${key}`, errorMessage]];

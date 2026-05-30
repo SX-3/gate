@@ -4,7 +4,7 @@ import type { Schema } from '../schema';
 import { compile } from '../compiler';
 import { isSimpleSchema } from '../compiler/utils';
 import { getErrorMessage } from '../error';
-import { createSchema, SchemaType, TYPE } from '../schema';
+import { createSchema, SchemaType } from '../schema';
 import { unknown } from './unknown';
 
 interface ArraySchema<Element> extends Schema<Element[]> {
@@ -49,8 +49,7 @@ const compileArray: Compiler<ArraySchema<unknown>> = (options) => {
 };
 
 function create<Element>(element: Schema<Element>, message?: ErrorGetter): ArraySchema<Element> {
-  return createSchema({
-    [TYPE]: SchemaType.ARRAY,
+  return createSchema(SchemaType.ARRAY, {
     element,
     compiler: compileArray,
     message: getErrorMessage(message) ?? 'Expected array',

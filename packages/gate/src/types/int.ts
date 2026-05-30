@@ -2,7 +2,7 @@ import type { ErrorGetter } from '../error';
 import type { Rules, Schema } from '../schema';
 import { EQ } from '../compiler/platform';
 import { getErrorMessage } from '../error';
-import { createSchema, SchemaType, TYPE } from '../schema';
+import { createSchema, SchemaType } from '../schema';
 
 const INT_RANGES = {
   int8: [-128, 127],
@@ -30,8 +30,7 @@ export function createInteger<T extends number | bigint>(size?: IntSize): Schema
     if (size) {
       const [min, max] = INT_RANGES[size];
 
-      return createSchema({
-        [TYPE]: type,
+      return createSchema(type, {
         rules: (name) => {
           const base = isBigInt
             ? `typeof ${name} ${EQ} "bigint"`
@@ -48,7 +47,7 @@ export function createInteger<T extends number | bigint>(size?: IntSize): Schema
       ? `typeof ${name} ${EQ} "bigint"`
       : `Number.isInteger(${name})`, errorMessage]];
 
-    return createSchema({ [TYPE]: type, rules });
+    return createSchema(type, { rules });
   };
 
   return Object.assign(create, create());

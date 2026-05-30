@@ -1,8 +1,3 @@
-import type { Schema } from './schema';
-import { check, parse, validate } from './compiler';
-import { GateError } from './error';
-import { settings } from './settings';
-
 /** The Standard Schema interface. */
 export interface StandardSchemaV1<Input = unknown, Output = Input> {
   /** The Standard Schema properties. */
@@ -77,36 +72,3 @@ export type InferInput<Schema extends StandardSchemaV1> = NonNullable<
 export type InferOutput<Schema extends StandardSchemaV1> = NonNullable<
   Schema['~standard']['types']
 >['output'];
-
-export function starndard<O, S extends Schema<O>>(schema: S): S & StandardSchemaV1<unknown, O> {
-  let fn: StandardSchemaV1<unknown, O>['~standard']['validate'];
-
-  switch (settings().standardMode) {
-    case 'parse':
-      fn = (value: unknown) => {
-        try {
-          return { value: parse(schema)(value) };
-        }
-        catch (e) {
-          if (e instanceof GateError) return { issues: [{ message: e.message, path: e.path }] };
-          throw e;
-        }
-      };
-      break;
-    case 'validate':
-      fn = validate(schema);
-      break;
-    case 'check':
-      fn = (value: unknown) => check(schema)(value) ? { value: (value as O) } : { issues: [{ message: 'Invalid input' }] };
-      break;
-  }
-
-  return {
-    ...schema,
-    '~standard': {
-      version: 1,
-      vendor: '@sx3/gate',
-      validate: fn,
-    },
-  };
-}

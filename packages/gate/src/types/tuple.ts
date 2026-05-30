@@ -3,7 +3,7 @@ import type { ErrorGetter } from '../error';
 import type { Schema } from '../schema';
 import { compile } from '../compiler';
 import { getErrorMessage } from '../error';
-import { createSchema, SchemaType, TYPE } from '../schema';
+import { createSchema, SchemaType } from '../schema';
 
 type TupleItems = readonly Schema[];
 
@@ -69,8 +69,7 @@ export function tuple<const T extends readonly Schema[]>(
   items: T,
   message?: ErrorGetter,
 ): TupleSchema<T> {
-  return createSchema({
-    [TYPE]: SchemaType.TUPLE,
+  return createSchema(SchemaType.TUPLE, {
     compiler: compileTuple,
     items,
     message: getErrorMessage(message) ?? `Expected tuple of length ${items.length}`,

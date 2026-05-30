@@ -148,7 +148,6 @@ describe('primitives', () => {
       const s = optional(number);
       const p = parse(s);
       expect(p(42)).toBe(42);
-      // @ts-expect-error - TS can't infer optional accepts undefined
       expect(p(undefined)).toBe(undefined);
       expect(() => p('42')).toThrow(GateError);
     });
@@ -158,7 +157,6 @@ describe('primitives', () => {
       const p = parse(s);
       expect(p(true)).toBe(true);
       expect(p(null)).toBe(null);
-      // @ts-expect-error - TS can't infer nullish accepts undefined
       expect(p(undefined)).toBe(undefined);
       expect(() => p(42)).toThrow(GateError);
     });

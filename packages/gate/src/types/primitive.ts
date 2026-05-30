@@ -2,7 +2,7 @@ import type { ErrorGetter } from '../error';
 import type { Schema, SchemaType } from '../schema';
 import { EQ } from '../compiler/platform';
 import { getErrorMessage } from '../error';
-import { createSchema, TYPE } from '../schema';
+import { createSchema } from '../schema';
 
 type TypeOf = 'string' | 'number' | 'boolean' | 'bigint' | 'symbol' | 'object' | 'function';
 
@@ -13,8 +13,7 @@ type TypeOf = 'string' | 'number' | 'boolean' | 'bigint' | 'symbol' | 'object' |
 export function createPrimitive<Type>(type: SchemaType, typeofRule: TypeOf): Schema<Type> & ((message?: ErrorGetter) => Schema<Type>) {
   const create = (message?: ErrorGetter): Schema<Type> => {
     const errorMessage = getErrorMessage(message) ?? `Expected ${typeofRule}`;
-    return createSchema({
-      [TYPE]: type,
+    return createSchema(type, {
       rules: name => [[`typeof ${name} ${EQ} "${typeofRule}"`, errorMessage]],
     });
   };

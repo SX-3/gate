@@ -15,7 +15,6 @@ describe('optional', () => {
 
     it('accepts undefined', () => {
       const p = parse(optional(string));
-      // @ts-expect-error fail
       expect(p(undefined)).toBe(undefined);
     });
 
@@ -32,7 +31,6 @@ describe('optional', () => {
     it('optional number', () => {
       const p = parse(optional(number));
       expect(p(42)).toBe(42);
-      // @ts-expect-error fail
       expect(p(undefined)).toBe(undefined);
       expect(() => p(null)).toThrow(GateError);
     });

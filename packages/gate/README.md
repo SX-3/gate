@@ -28,7 +28,7 @@ pnpm add @sx3/gate
 ## Quick Start
 
 ```ts
-import { parse, validate, check, pipe, string, number, object, array, min, max, email } from '@sx3/gate';
+import { array, check, email, max, min, number, object, parse, pipe, string, validate } from '@sx3/gate';
 
 const UserSchema = object({
   name: pipe(string, min(2), max(50)),
@@ -58,7 +58,7 @@ Three validation modes. They differ in speed and error detail.
 ```ts
 import { parse } from '@sx3/gate';
 
-try { parse(User)(input) }
+try { parse(User)(input); }
 catch (error) { /* GateError */ }
 ```
 
@@ -71,7 +71,7 @@ import { validate } from '@sx3/gate';
 
 const result = validate(User)(input);
 if (result.issues) { /* all errors */ }
-else { result.value }
+else { result.value; }
 ```
 
 Returns **all** errors at once, never throws. Perfect for forms.
@@ -144,45 +144,62 @@ pipe(number, refine('$ % 2 === 0', 'Must be even'));
 
 ```ts
 import {
-  string, number, boolean, bigint,
-  unknown, never, literal,
-  object, array, tuple, record, union, instance,
-  int, int8, int16, int32, int64,
-  uint8, uint16, uint32, uint64,
+  array,
+  bigint,
+  boolean,
+  instance,
+  int,
+  int8,
+  int16,
+  int32,
+  int64,
+  literal,
+  never,
+  number,
+  object,
+  record,
+  string,
+  tuple,
+  uint8,
+  uint16,
+  uint32,
+  uint64,
+  union,
+  unknown,
 } from '@sx3/gate';
 ```
 
 ### Primitives
 
 ```ts
-string       // typeof === "string"
-number       // typeof === "number"
-boolean      // typeof === "boolean"
-bigint       // typeof === "bigint"
-unknown      // passes anything
-never        // rejects everything
-literal(42)  // === 42
+string; // typeof === "string"
+number; // typeof === "number"
+boolean; // typeof === "boolean"
+bigint; // typeof === "bigint"
+unknown; // passes anything
+never; // rejects everything
+literal(42); // === 42
 ```
 
 ### Objects and collections
 
 ```ts
-object({ name: string, age: number })  // { name: string; age: number }
-array(string)                           // string[]
-tuple([string, number])                 // [string, number]
-record(string, number)                  // Record<string, number>
-union([string, number])                 // string | number
-instance(Date)                          // instanceof Date
+object({ name: string, age: number }); // { name: string; age: number }
+array(string); // string[]
+tuple([string, number]); // [string, number]
+record(string, number); // Record<string, number>
+union([string, number]); // string | number
+instance(Date); // instanceof Date
 ```
 
 ### Modifiers
 
 ```ts
-import { nullable, optional, nullish } from '@sx3/gate';
+import { nullable, nullish, optional } from '@sx3/gate';
 
-nullable(string)   // string | null
-optional(string)   // string | undefined
-nullish(string)    // string | null | undefined
+nullable(string); // string | null
+optional(string); // string | undefined
+nullish(string); // string | null | undefined
 ```
 
 ## Constraints
@@ -190,22 +207,22 @@ nullish(string)    // string | null | undefined
 Applied via `pipe`. For strings/arrays they check `.length`, for numbers they check the value.
 
 ```ts
-min(string, 3)                // .length >= 3
-max(string, 100)              // .length <= 100
-clamp(string, 0, 100)         // .length >= 0 && .length <= 100
+min(string, 3); // .length >= 3
+max(string, 100); // .length <= 100
+clamp(string, 0, 100); // .length >= 0 && .length <= 100
 
-min(number, 0)                // >= 0
-max(number, 100)              // <= 100
-clamp(number, 0, 100)         // >= 0 && <= 100
+min(number, 0); // >= 0
+max(number, 100); // <= 100
+clamp(number, 0, 100); // >= 0 && <= 100
 
-length(string, 10)            // .length === 10
+length(string, 10); // .length === 10
 
-email                          // email (regex)
-uuid                           // UUID v4
-url                            // http(s)://...
-cuid                           // CUID
-datetime                       // ISO 8601 UTC
-trim(string)                   // whitespace trim
+email; // email (regex)
+uuid; // UUID v4
+url; // http(s)://...
+cuid; // CUID
+datetime; // ISO 8601 UTC
+trim(string); // whitespace trim
 ```
 
 ### `pattern` — arbitrary regex
@@ -226,21 +243,21 @@ const Digits = pattern(/^\d+$/, 'Digits only');
 Left-to-right: each function takes a schema and returns a schema.
 
 ```ts
-import { pipe, string, number, min, max, to } from '@sx3/gate';
+import { max, min, number, pipe, string, to } from '@sx3/gate';
 
 const Username = pipe(string, min(3), max(20));
-const NumericId = pipe(string, to(number));   // string → number
+const NumericId = pipe(string, to(number)); // string → number
 ```
 
 ### `merge` — merging objects
 
 ```ts
-import { object, merge } from '@sx3/gate';
+import { merge, object } from '@sx3/gate';
 
 const A = object({ id: number });
 const B = object({ name: string });
 const C = object({ age: number });
-const ABC = merge(A, B, C);  // { id: number; name: string; age: number }
+const ABC = merge(A, B, C); // { id: number; name: string; age: number }
 ```
 
 ### `strict` — disallow extra keys
@@ -261,25 +278,25 @@ parse(StrictUser)({ id: 1, name: 'a', extra: true });
 Compiles to inline coercion operations — no function calls at runtime.
 
 ```ts
-import { pipe, string, number, boolean, object, to } from '@sx3/gate';
+import { boolean, number, object, pipe, string, to } from '@sx3/gate';
 
 // string ↔ number
-to(string, number)   // "42" → 42
-to(number, string)   // 42 → "42"
+to(string, number); // "42" → 42
+to(number, string); // 42 → "42"
 
 // string ↔ boolean
-to(string, boolean)    // "true" → true, "false" → false
-to(boolean, string)    // true → "true"
+to(string, boolean); // "true" → true, "false" → false
+to(boolean, string); // true → "true"
 
 // string ↔ bigint
-to(string, bigint)     // "9007199254740991" → 9007199254740991n
-to(bigint, string)     // 9007199254740991n → "9007199254740991"
+to(string, bigint); // "9007199254740991" → 9007199254740991n
+to(bigint, string); // 9007199254740991n → "9007199254740991"
 
 // string ↔ object (JSON.parse / JSON.stringify)
-to(string, object({}))    // '{"a":1}' → { a: 1 }   — uses JSON.parse
-to(object({}), string)    //  { a: 1 } → '{"a":1}'   — uses JSON.stringify
-to(string, array(number)) // '[1,2]' → [1, 2]      — JSON.parse
-to(array(number), string) //  [1,2] → '[1,2]'       — JSON.stringify
+to(string, object({})); // '{"a":1}' → { a: 1 }   — uses JSON.parse
+to(object({}), string); //  { a: 1 } → '{"a":1}'   — uses JSON.stringify
+to(string, array(number)); // '[1,2]' → [1, 2]      — JSON.parse
+to(array(number), string); //  [1,2] → '[1,2]'       — JSON.stringify
 ```
 
 Coercion only works between compatible type pairs. Unsupported combinations throw at schema compilation time.
@@ -289,8 +306,8 @@ Coercion only works between compatible type pairs. Unsupported combinations thro
 ```ts
 import { string, transform } from '@sx3/gate';
 
-transform(string, s => s.toUpperCase())('hello');  // "HELLO"
-transform(string, JSON.parse) // equivalent to to(object({}))
+transform(string, s => s.toUpperCase())('hello'); // "HELLO"
+transform(string, JSON.parse); // equivalent to to(object({}))
 ```
 
 ## Type Inference
@@ -319,7 +336,7 @@ By default `~standard.validate` uses `parse` mode. Switch it:
 import { settings } from '@sx3/gate';
 
 settings({ standardMode: 'validate' }); // use validate
-settings({ standardMode: 'check' });    // use check
+settings({ standardMode: 'check' }); // use check
 ```
 
 ## Settings
@@ -328,9 +345,9 @@ settings({ standardMode: 'check' });    // use check
 import { settings } from '@sx3/gate';
 
 settings({
-  strict: true,           // all object() are strict by default
-  checkNaN: false,        // don't check NaN for number()
-  standardMode: 'parse',  // 'parse' | 'validate' | 'check'
+  strict: true, // all object() are strict by default
+  checkNaN: false, // don't check NaN for number()
+  standardMode: 'parse', // 'parse' | 'validate' | 'check'
 });
 ```
 

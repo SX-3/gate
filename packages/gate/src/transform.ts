@@ -82,8 +82,7 @@ export function to<From, To>(
   const from = fromOrTarget as Schema<From>;
   const target = maybeTarget;
 
-  return createSchema({
-    [TYPE]: target[TYPE],
+  return createSchema(target[TYPE], {
     compiler: (options) => {
       const { name, fail, path, context } = options;
 
@@ -114,8 +113,7 @@ export function transform<Input, Output>(
   parse: (value: Input) => Output,
   // serialize?: (value: Output) => Input,
 ): Schema<Output> {
-  return createSchema({
-    [TYPE]: SchemaType.UNKNOWN,
+  return createSchema(SchemaType.UNKNOWN, {
     compiler: (options) => {
       const { name, context } = options;
 

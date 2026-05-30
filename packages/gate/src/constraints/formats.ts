@@ -4,7 +4,7 @@ import type { Schema } from '../schema';
 import { compile } from '../compiler';
 import { EQ } from '../compiler/platform';
 import { getErrorMessage } from '../error';
-import { isSchema, SchemaType, TYPE } from '../schema';
+import { createSchema, isSchema, SchemaType, TYPE } from '../schema';
 import { uint16 } from '../types/int';
 
 function createFormat<T extends string>(
@@ -34,8 +34,7 @@ function createFormat<T extends string>(
       };
     }
 
-    return {
-      [TYPE]: SchemaType.STRING,
+    return createSchema(SchemaType.STRING, {
       rules: (name: string, context: Context) => {
         const key = context.embed(regex);
         return [
@@ -45,7 +44,7 @@ function createFormat<T extends string>(
             : `${key}.test(${name})`, message],
         ];
       },
-    };
+    });
   }
 
   return Object.assign(format, format()) as Schema<T> & typeof format;
@@ -83,15 +82,14 @@ export const datetime = createFormat(
 
 /** Trims whitespace from a string (inline transformation). */
 export function trim(schema: Schema<string>): Schema<string> {
-  return {
-    [TYPE]: schema[TYPE],
+  return createSchema(schema[TYPE], {
     compiler: (options) => {
       const name = options.name;
       const compiled = compile({ ...options, schema });
       compiled.lines.push(`${name}=${name}.trim();`);
       return compiled;
     },
-  };
+  });
 }
 
 const createPort = (message?: ErrorGetter): Schema<number> => uint16(getErrorMessage(message) ?? 'Invalid port');

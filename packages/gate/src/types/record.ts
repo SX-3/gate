@@ -4,7 +4,7 @@ import type { Schema } from '../schema';
 import { compile } from '../compiler';
 import { NEQ } from '../compiler/platform';
 import { getErrorMessage } from '../error';
-import { createSchema, SchemaType, TYPE } from '../schema';
+import { createSchema, SchemaType } from '../schema';
 
 interface RecordSchema<T> extends Schema<Record<string, T>> {
   value: Schema<T>;
@@ -47,8 +47,8 @@ const compileRecord: Compiler<RecordSchema<unknown>> = (options) => {
 };
 
 export function record<T>(value: Schema<T>, message?: ErrorGetter): Schema<Record<string, T>> {
-  return createSchema({
-    [TYPE]: SchemaType.RECORD,
+  return createSchema(SchemaType.RECORD, {
+
     compiler: compileRecord,
     value,
     message: getErrorMessage(message) ?? 'Expected object',

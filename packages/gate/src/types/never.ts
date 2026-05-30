@@ -1,12 +1,11 @@
 import type { ErrorGetter } from '../error';
 import type { Schema } from '../schema';
 import { getErrorMessage } from '../error';
-import { createSchema, SchemaType, TYPE } from '../schema';
+import { createSchema, SchemaType } from '../schema';
 
 function create(message?: ErrorGetter): Schema<never> {
   const errorMessage = getErrorMessage(message) ?? 'Expected never';
-  return createSchema({
-    [TYPE]: SchemaType.NEVER,
+  return createSchema(SchemaType.NEVER, {
     rules: () => [['false', errorMessage]],
   });
 }

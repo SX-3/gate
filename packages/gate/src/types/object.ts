@@ -150,8 +150,7 @@ function create<Shape extends ObjectShape>(shape?: Shape, options?: ObjectOption
     }
   }
 
-  return createSchema({
-    [TYPE]: SchemaType.OBJECT,
+  return createSchema(SchemaType.OBJECT, {
     fields,
     compiler: compileObject,
     message: getErrorMessage(options) ?? 'Expected object',

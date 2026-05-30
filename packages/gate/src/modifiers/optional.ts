@@ -1,6 +1,6 @@
 import type { Schema } from '../schema';
 import type { ModifierSchema } from './modifier';
-import { createSchema, SchemaType, TYPE } from '../schema';
+import { createSchema, SchemaType } from '../schema';
 import { compileModifier } from './modifier';
 
 /**
@@ -8,9 +8,8 @@ import { compileModifier } from './modifier';
  * Guard: `name !== void 0` — if not undefined, check inner.
  */
 export function optional<T>(inner: Schema<T>): ModifierSchema<T | undefined> {
-  return createSchema({
-    [TYPE]: SchemaType.MODIFIER,
-    guard: name => `${name} !== void 0`,
+  return createSchema(SchemaType.MODIFIER, {
+    guard: (name: string) => `${name} !== void 0`,
     compiler: compileModifier,
     inner,
   });

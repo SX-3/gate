@@ -1,5 +1,6 @@
-import type { StandardSchemaV1, SuccessResult } from '../src/standard';
-import { afterEach, describe, expect, it } from 'bun:test';
+import type { InferInput, InferOutput, StandardSchemaV1, SuccessResult } from '../src/standard';
+import { afterEach, describe, expect, expectTypeOf, it } from 'bun:test';
+import { parse } from '../src';
 import { nullable } from '../src/modifiers/nullable';
 import { optional } from '../src/modifiers/optional';
 import { settings } from '../src/settings';
@@ -338,10 +339,13 @@ describe('standard schema', () => {
 
   describe('type inference', () => {
     it('InferInput and InferOutput types are exported', () => {
-      // This is a compile-time test – just verifying the types exist
-      // by checking that the module exports them
-      const std = standard(string());
-      expect(std['~standard'].types).toBeUndefined(); // types is optional
+      const schema = object({ id: string });
+      expectTypeOf<InferOutput<typeof string>>().toBeString();
+      expectTypeOf<InferInput<typeof schema>>().toEqualTypeOf<{ id: string }>();
+
+      const parsed = parse(schema)({ id: 'abc' });
+      expect(parsed).toEqual({ id: 'abc' });
+      expectTypeOf<typeof parsed>().toEqualTypeOf<{ id: string }>();
     });
   });
 });

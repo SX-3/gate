@@ -7,7 +7,7 @@ import { compile, EMPTY_RESULT } from '../compiler';
 import { checkCost } from '../compiler/utils';
 
 import { getErrorMessage } from '../error';
-import { createSchema, isSchema, SchemaType, TYPE } from '../schema';
+import { createSchema, isSchema, SchemaType } from '../schema';
 import { literal } from './literal';
 
 type UnionValue = Schema | Literal;
@@ -94,8 +94,7 @@ const compileUnion: Compiler<UnionSchema<unknown>> = (options) => {
 };
 
 export function union<V extends [UnionValue, ...UnionValue[]]>(variants: V, message?: ErrorGetter): UnionSchema<GetValue<V[number]>> {
-  return createSchema({
-    [TYPE]: SchemaType.UNION,
+  return createSchema(SchemaType.UNION, {
     compiler: compileUnion,
     variants: variants.map(s => isSchema(s) ? s : literal(s)),
     message: getErrorMessage(message) ?? 'Union failed',
