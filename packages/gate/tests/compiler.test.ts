@@ -123,6 +123,21 @@ describe('compiler', () => {
       expect(result.issues).toBeDefined();
       expect(result.issues!.length).toBe(3);
     });
+
+    it('clears issues between calls', () => {
+      const v = validate(number());
+      const first = v('not a number');
+      expect(first.issues).toBeDefined();
+
+      const second = v(42);
+      expect(second.issues).toBeUndefined();
+    });
+
+    it('does not accumulate issues across calls', () => {
+      const v = validate(array(number()));
+      expect(v(['x']).issues!.length).toBe(1);
+      expect(v(['y']).issues!.length).toBe(1);
+    });
   });
 
   describe('check', () => {

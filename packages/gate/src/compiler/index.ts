@@ -170,15 +170,21 @@ export function validate<O>(schema: Schema<O>): CompiledFunction<Result<O>> {
   const context = new Context();
   const issues = context.embed('[]');
 
+  const compiled = compile({
+    schema,
+    name: 'i',
+    path: [],
+    context,
+    mode: 'validate',
+    fail: (m, p, n) => failValidate(context, m, p, n, issues),
+  });
+
+  // Reset the shared issues array at the start of every invocation
+  // so issues from previous calls do not leak into the next result.
+  compiled.lines.unshift(`${issues}.length=0;`);
+
   return cache(schema, build<Result<O>>(
-    compile({
-      schema,
-      name: 'i',
-      path: [],
-      context,
-      mode: 'validate',
-      fail: (m, p, n) => failValidate(context, m, p, n, issues),
-    }),
+    compiled,
     context,
     `${issues}.length?{value:i,issues: ${issues}}:{value:i}`,
   ), VALIDATE_CACHE);
