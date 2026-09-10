@@ -77,6 +77,18 @@ describe('compiler', () => {
       }
     });
 
+    it('throws error that is an instance of GateError and Error', () => {
+      const p = parse(string());
+      try {
+        p(42);
+        expect.unreachable();
+      }
+      catch (e) {
+        expect(e).toBeInstanceOf(GateError);
+        expect(e).toBeInstanceOf(Error);
+      }
+    });
+
     it('unknown schema always passes', () => {
       const p = parse(unknown);
       expect(p(undefined)).toBe(undefined);

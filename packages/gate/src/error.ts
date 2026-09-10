@@ -1,13 +1,19 @@
-export class GateError {
+export class GateError implements Error {
   message: string;
   path: string[];
+  declare name: string;
 
   constructor(message: string, path: string[]) {
     this.message = message;
     this.path = path;
-    // Error.captureStackTrace(this);
   }
 }
+
+// `extends Error` makes V8 capture a stack trace inside `super()` on every
+// construction, which is pure overhead for validation errors. Linking the
+// prototype manually keeps `instanceof Error` (and `instanceof GateError`)
+// working while never calling the `Error` constructor, so no stack is captured.
+Object.setPrototypeOf(GateError.prototype, Error.prototype);
 
 export type ErrorGetter<T = undefined> = (T extends undefined ? () => string : (options: T) => string) | string;
 interface OptionsWithGetter<T> {
