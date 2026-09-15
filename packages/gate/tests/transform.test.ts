@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'bun:test';
-import { check, parse, validate } from '../src/compiler';
+import type { InferInput, InferOutput, Result } from '../src/standard';
+import { describe, expect, expectTypeOf, it } from 'bun:test';
+import { check, parse, standardCheck, standardParse, validate } from '../src/compiler';
 import { max } from '../src/constraints/max';
 import { min } from '../src/constraints/min';
 import { GateError } from '../src/error';
@@ -293,5 +294,47 @@ describe('to in pipe', () => {
     const s = pipe(string, to(bigint));
     expect(check(s)('42')).toBe(true);
     expect(check(s)('abc')).toBe(false);
+  });
+});
+
+describe('type inference', () => {
+  it('transform keeps the input type of the source schema', () => {
+    const schema = transform(string(), value => value.length);
+
+    expectTypeOf<InferInput<typeof schema>>().toEqualTypeOf<string>();
+    expectTypeOf<InferOutput<typeof schema>>().toEqualTypeOf<number>();
+    expectTypeOf(parse(schema)).toEqualTypeOf<(input: unknown) => number>();
+    expect(parse(schema)('hello')).toBe(5);
+  });
+
+  it('transform accepts a source with a distinct input type', () => {
+    const source = transform(string(), value => ({ length: value.length }));
+    const schema = transform(source, value => value.length);
+
+    expectTypeOf<InferInput<typeof source>>().toEqualTypeOf<string>();
+    expectTypeOf<InferOutput<typeof source>>().toEqualTypeOf<{ length: number }>();
+    expectTypeOf<InferInput<typeof schema>>().toEqualTypeOf<string>();
+    expectTypeOf<InferOutput<typeof schema>>().toEqualTypeOf<number>();
+
+    const parsed = parse(schema)('hello');
+    expect(parsed).toBe(5);
+    expectTypeOf<typeof parsed>().toEqualTypeOf<number>();
+  });
+
+  it('parse, validate, check and standard modes accept a distinct input type', () => {
+    const source = transform(string(), value => value.length);
+    const schema = transform(source, value => value > 3);
+
+    expectTypeOf<InferInput<typeof schema>>().toEqualTypeOf<string>();
+    expectTypeOf<InferOutput<typeof schema>>().toEqualTypeOf<boolean>();
+    expectTypeOf(parse(schema)).toEqualTypeOf<(input: unknown) => boolean>();
+    expectTypeOf(validate(schema)).toEqualTypeOf<(input: unknown) => Result<boolean>>();
+    expectTypeOf(check(schema)).toEqualTypeOf<(input: unknown) => boolean>();
+    expectTypeOf(standardParse(schema)).toEqualTypeOf<(input: unknown) => Result<boolean>>();
+    expectTypeOf(standardCheck(schema)).toEqualTypeOf<(input: unknown) => Result<boolean>>();
+
+    expect(parse(schema)('hello')).toBe(true);
+    expect(validate(schema)('hello').issues).toBeUndefined();
+    expect(check(schema)('hello')).toBe(true);
   });
 });

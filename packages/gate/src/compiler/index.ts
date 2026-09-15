@@ -138,7 +138,7 @@ export function compile<S extends Schema>(options: CompilerOptions<S>): Compiled
   return result;
 }
 
-export function parse<O>(schema: Schema<O>): CompiledFunction<O> {
+export function parse<O>(schema: Schema<unknown, O>): CompiledFunction<O> {
   // ? Check cache first
   const cached = (schema as SchemaWithCache<O>)[PARSE_CACHE];
   if (cached) return cached;
@@ -163,7 +163,7 @@ export function parse<O>(schema: Schema<O>): CompiledFunction<O> {
   }), context), PARSE_CACHE);
 }
 
-export function validate<O>(schema: Schema<O>): CompiledFunction<Result<O>> {
+export function validate<O>(schema: Schema<unknown, O>): CompiledFunction<Result<O>> {
   const cached = (schema as SchemaWithCache<O>)[VALIDATE_CACHE];
   if (cached) return cached;
 
@@ -190,7 +190,7 @@ export function validate<O>(schema: Schema<O>): CompiledFunction<Result<O>> {
   ), VALIDATE_CACHE);
 }
 
-export function check<O>(schema: Schema<O>): CompiledFunction<boolean> {
+export function check<O>(schema: Schema<unknown, O>): CompiledFunction<boolean> {
   const cached = (schema as SchemaWithCache<O>)[CHECK_CACHE];
   if (cached) return cached;
 
@@ -206,7 +206,7 @@ export function check<O>(schema: Schema<O>): CompiledFunction<boolean> {
   }), context, 'true'), CHECK_CACHE);
 }
 
-export function standardParse<O>(schema: Schema<O>): CompiledFunction<Result<O>> {
+export function standardParse<O>(schema: Schema<unknown, O>): CompiledFunction<Result<O>> {
   const cached = (schema as SchemaWithCache<O>)[STANDARD_PARSE_CACHE];
   if (cached) return cached;
 
@@ -222,7 +222,7 @@ export function standardParse<O>(schema: Schema<O>): CompiledFunction<Result<O>>
   }), context, '{value:i}'), STANDARD_PARSE_CACHE);
 }
 
-export function standardCheck<O>(schema: Schema<O>): CompiledFunction<Result<O>> {
+export function standardCheck<O>(schema: Schema<unknown, O>): CompiledFunction<Result<O>> {
   const cached = (schema as SchemaWithCache<O>)[STANDARD_CHECK_CACHE];
   if (cached) return cached;
 

@@ -52,10 +52,11 @@ export function isSchema(value: unknown): value is Schema {
 }
 
 export function createSchema<
-  Output,
-  Options extends SchemaCreateOptions,
->(type: SchemaType, options: Options): Schema<Output> & Options {
-  const schema = { ...options, [TYPE]: type } as Schema<Output> & Options;
+  Input,
+  Output = Input,
+  Options extends SchemaCreateOptions = SchemaCreateOptions,
+>(type: SchemaType, options: Options): Schema<Input, Output> & Options {
+  const schema = { ...options, [TYPE]: type } as Schema<Input, Output> & Options;
 
   const standard = {
     version: 1,

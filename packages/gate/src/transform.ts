@@ -107,11 +107,17 @@ export function to<From, To>(
   });
 }
 
-export function transform<Input, Output>(
-  schema: Schema<Input>,
-  parse: (value: Input) => Output,
-  // serialize?: (value: Output) => Input,
-): Schema<Output> {
+/**
+ * Applies `parse` to the output of `schema`, keeping the input type of the source.
+ *
+ * The result reports the source input as `InferInput` and the transformation
+ * result as `InferOutput`, so a transformed schema can be chained and parsed.
+ */
+export function transform<Input, Output, Result>(
+  schema: Schema<Input, Output>,
+  parse: (value: Output) => Result,
+  // serialize?: (value: Result) => Input,
+): Schema<Input, Result> {
   return createSchema(SchemaType.UNKNOWN, {
     compiler: (options) => {
       const { name, context } = options;

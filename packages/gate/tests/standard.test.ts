@@ -378,5 +378,26 @@ describe('standard schema', () => {
       expect(parsed).toEqual({ id: 'abc' });
       expectTypeOf<typeof parsed>().toEqualTypeOf<{ id: string }>();
     });
+
+    it('containers and modifiers keep both slots in sync', () => {
+      const stringArray = array(string);
+      const nullableString = nullable(string);
+      const optionalString = optional(string);
+      const maxedString = max(string(), 3);
+      const partialObject = object({ id: string, nick: optional(string) });
+
+      expectTypeOf<InferInput<typeof stringArray>>().toEqualTypeOf<string[]>();
+      expectTypeOf<InferOutput<typeof stringArray>>().toEqualTypeOf<string[]>();
+      expectTypeOf<InferOutput<typeof nullableString>>().toEqualTypeOf<string | null>();
+      expectTypeOf<InferOutput<typeof optionalString>>().toEqualTypeOf<string | undefined>();
+      expectTypeOf<InferOutput<typeof maxedString>>().toEqualTypeOf<string>();
+      expectTypeOf<InferOutput<typeof partialObject>>().toEqualTypeOf<{ id: string; nick?: string | undefined }>();
+
+      expect(parse(stringArray)(['a', 'b'])).toEqual(['a', 'b']);
+      expect(parse(nullableString)(null)).toBeNull();
+      expect(parse(optionalString)(undefined)).toBeUndefined();
+      expect(parse(maxedString)('ab')).toBe('ab');
+      expect(parse(partialObject)({ id: 'a' })).toEqual({ id: 'a' });
+    });
   });
 });
